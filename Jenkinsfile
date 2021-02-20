@@ -2,15 +2,25 @@ pipeline {
     agent any
 
     stages {
-        stage('Build') {
-            steps {
-                mvn 'package'
-            }
-        }
+		stage ('setup'){
+				parallel {
+					   stage('Startup Sonarqube') {
+							steps {
+								sh '/usr/bin/sonar start'
+							}
+						}
+						stage('Build') {
+							steps {
+								mvn 'package'
+							}
+						}
+					}
+		}
         stage('Statical Code Analysis') {
            
             steps {
-                withSonarQubeEnv('server1') {
+			
+                withSonarQubeEnv('SonarQubeServerOnVM') {
                      sh 'mvn clean package sonar:sonar'
              
                 }
@@ -50,4 +60,9 @@ void printResult() {
         if (qg.status != 'OK') {
             echo 'Pipeline quality result: ${qg.status}'
         }
+}
+
+def waitForStartup(body) {
+   sleep time:3, unit: 'MINUTES'
+   body()
 }
