@@ -7,7 +7,7 @@ pipeline {
 				mvn 'package'
 			}
 		}
-        stage('Static Code Analysis') {
+        stage('Static Code Analysis By Sonarqube') {
            
             steps {
 		        withSonarQubeEnv('SonarQubeServerOnVM') {
@@ -45,14 +45,12 @@ def mvn(def args) {
     }
 }
 
-void printResult() {
-   timeout(time: 2, unit: ' ') {
+void waitForQualityGateAndSetResult() {
+    timeout(time: 2, unit: 'MINUTES'){
         def qg = waitForQualityGate()
-        echo 'Pipeline quality result: ${qg.status}'
-   }
-}
-
-def waitForStartup(body) {
-   sleep time:3, unit: 'MINUTES'
-   body()
+        if (qg.status != 'OK') {
+            unstable("Pipeline unstable due to quality gate failure: ${qg.status}")
+        }
+		 echo 'Pipeline quality result: ${qg.status}'
+    }
 }
