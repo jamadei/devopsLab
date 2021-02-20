@@ -46,10 +46,10 @@ def mvn(def args) {
 }
 
 void printResult() {
+   timeout(time: 2, unit: ' ') {
         def qg = waitForQualityGate()
-        if (qg.status != 'OK') {
-            echo 'Pipeline quality result: ${qg.status}'
-        }
+        echo 'Pipeline quality result: ${qg.status}'
+   }
 }
 
 def waitForStartup(body) {
