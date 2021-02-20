@@ -8,7 +8,6 @@ pipeline {
 			}
 		}
         stage('Static Code Analysis By Sonarqube') {
-           
             steps {
 		        withSonarQubeEnv('SonarQubeServerOnVM') {
                      sh 'mvn clean package sonar:sonar'
