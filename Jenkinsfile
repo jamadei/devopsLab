@@ -19,7 +19,7 @@ pipeline {
 
         stage('Quality Gate') {
             steps {
-                printResult()
+                waitForQualityGateAndSetResult()
             }
         }
     }
