@@ -2,25 +2,15 @@ pipeline {
     agent any
 
     stages {
-		stage ('setup'){
-				parallel {
-					   stage('Startup Sonarqube') {
-							steps {
-								sh '/usr/bin/sonar start'
-							}
-						}
-						stage('Build') {
-							steps {
-								mvn 'package'
-							}
-						}
-					}
+		stage('Build') {
+			steps {
+				mvn 'package'
+			}
 		}
-        stage('Statical Code Analysis') {
+        stage('Static Code Analysis') {
            
             steps {
-			
-                withSonarQubeEnv('SonarQubeServerOnVM') {
+		        withSonarQubeEnv('SonarQubeServerOnVM') {
                      sh 'mvn clean package sonar:sonar'
              
                 }
