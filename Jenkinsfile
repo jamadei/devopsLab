@@ -1,29 +1,32 @@
 pipeline {
     agent any
 
-    stages {
-		stage('Build') {
-			steps {
-				mvn 'package'
-			}
-		}
-        stage('Static Code Analysis By Sonarqube') {
-            steps {
-		        withSonarQubeEnv('SonarQubeServerOnVM') {
-                     sh 'mvn sonar:sonar'
-             
-                }
-            }
-        }
-
-        stage('Quality Gate') {
-            steps {
-                waitForQualityGateAndSetResult()
-            }
-        }
+    tools {
+        maven 'M3'
     }
-}
 
+    stages {
+        //stage('Checkout') {
+         //   steps {
+        //        git branch: 'snyk', url: 'https://github.com/jamadei/devopsLab'
+         //   }
+       // }
+
+        stage('Build') {
+            steps {
+                sh 'mvn -B package'
+            }
+        }
+        
+        stage('Test with snyk') {
+             steps {
+               snykSecurity snykInstallation: 'Snyk1', snykTokenId: 'Snyk_token' 
+              }
+        }
+        
+    }
+
+}
 def mvn(def args) {
     def mvnHome = tool 'M3'
     def javaHome = tool 'JDK11'
@@ -43,12 +46,3 @@ def mvn(def args) {
    
 }
 
-void waitForQualityGateAndSetResult() {
-    timeout(time: 2, unit: 'MINUTES'){
-        def qg = waitForQualityGate()
-        if (qg.status != 'OK') {
-            unstable("Pipeline unstable due to quality gate failure: ${qg.status}")
-        }
-		 echo 'Pipeline quality result: ${qg.status}'
-    }
-}
