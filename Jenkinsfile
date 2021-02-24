@@ -7,22 +7,26 @@ pipeline {
 
     stages {
         stage('Build') {
-            mvn 'clean install -DskipTests'
-            archiveArtifacts '**/target/*.*ar'
+            steps {
+                mvn 'clean install -DskipTests'
+                archiveArtifacts '**/target/*.*ar'
+            }
         }
 
-        parallel(
-                unitTest: {
-                    stage('Unit Test') {
+        stage('Tests') {
+            parallel {
+                stage('Unit Test') {
+                    steps {
                         mvn 'test'
                     }
-                },
-                integrationTest: {
-                    stage('Integration Test') {
+                }
+                stage('Integration Test') {
+                    steps {
                         mvn 'verify -DskipUnitTests -Parq-wildfly-swarm '
                     }
                 }
-        )
+            }
+        }
         
         stage('Test with snyk') {
              steps {
