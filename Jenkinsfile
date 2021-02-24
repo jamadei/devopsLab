@@ -3,10 +3,23 @@ pipeline {
 
     stages {
 		stage('Build') {
-			steps {
-				mvn 'package'
-			}
-		}
+            mvn 'clean install -DskipTests'
+            archiveArtifacts '**/target/*.*ar'
+        }
+
+        parallel(
+                unitTest: {
+                    stage('Unit Test') {
+                        mvn 'test'
+                    }
+                },
+                integrationTest: {
+                    stage('Integration Test') {
+                        mvn 'verify -DskipUnitTests -Parq-wildfly-swarm '
+                    }
+                }
+        )
+		
         stage('Static Code Analysis By Sonarqube') {
             steps {
 		        withSonarQubeEnv('SonarQubeServerOnVM') {
