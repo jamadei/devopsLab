@@ -6,17 +6,23 @@ pipeline {
     }
 
     stages {
-        //stage('Checkout') {
-         //   steps {
-        //        git branch: 'snyk', url: 'https://github.com/jamadei/devopsLab'
-         //   }
-       // }
-
         stage('Build') {
-            steps {
-               mvn 'package'
-            }
+            mvn 'clean install -DskipTests'
+            archiveArtifacts '**/target/*.*ar'
         }
+
+        parallel(
+                unitTest: {
+                    stage('Unit Test') {
+                        mvn 'test'
+                    }
+                },
+                integrationTest: {
+                    stage('Integration Test') {
+                        mvn 'verify -DskipUnitTests -Parq-wildfly-swarm '
+                    }
+                }
+        )
         
         stage('Test with snyk') {
              steps {
