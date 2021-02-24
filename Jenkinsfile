@@ -2,29 +2,27 @@ pipeline {
     agent any
 
     stages {
-		stage('Build') {
-        	steps {
-            	mvn 'clean install -DskipTests'
-            	archiveArtifacts '**/target/*.*ar'
+		 stage('Build') {
+            steps {
+                mvn 'clean install -DskipTests'
+                archiveArtifacts '**/target/*.*ar'
             }
         }
 
-        parallel(
-                unitTest: {
-                    stage('Unit Test') {
-                    	steps {
-                            mvn 'test'
-                        }
-                    }
-                },
-                integrationTest: {
-                    stage('Integration Test') {
-                    	steps {
-                        	mvn 'verify -DskipUnitTests -Parq-wildfly-swarm '
-                        }
+        stage('Tests') {
+            parallel {
+                stage('Unit Test') {
+                    steps {
+                        mvn 'test'
                     }
                 }
-        )
+                stage('Integration Test') {
+                    steps {
+                        mvn 'verify -DskipUnitTests -Parq-wildfly-swarm '
+                    }
+                }
+            }
+        }
 		
         stage('Static Code Analysis By Sonarqube') {
             steps {
